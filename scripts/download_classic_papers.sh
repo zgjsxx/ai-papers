@@ -23,11 +23,20 @@ papers=(
   "multimodal|Visual Instruction Tuning|https://arxiv.org/pdf/2304.08485.pdf"
 )
 
+sanitize_filename() {
+  local raw="$1"
+  # Replace whitespace with underscores and keep only safe filename chars.
+  printf '%s' "$raw" \
+    | tr '[:space:]' '_' \
+    | sed -E 's/[^[:alnum:]_.-]+/_/g; s/_+/_/g; s/^_+|_+$//g'
+}
+
 for entry in "${papers[@]}"; do
   IFS='|' read -r category title url <<<"$entry"
 
   mkdir -p "$ROOT_DIR/$category"
-  output="$ROOT_DIR/$category/$title.pdf"
+  safe_title="$(sanitize_filename "$title")"
+  output="$ROOT_DIR/$category/$safe_title.pdf"
 
   if [[ -f "$output" ]]; then
     echo "[skip] $output already exists"
